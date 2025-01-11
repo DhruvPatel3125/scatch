@@ -1,12 +1,17 @@
 const express = require("express")
 const app = express()
 
-const db = require("./config/mongoose-connection");
 const cookieParser = require("cookie-parser")
 const path = require("path")
 const ownersRouter = require("./routes/ownersRouter");
-const usersRouter = require("./routes/productsRouter");
-const productsRouter = require("./routes/usersRouter");
+const usersRouter = require("./routes/usersRouter");
+const productsRouter = require("./routes/productsRouter");
+const indexRoute = require("./routes/index");
+
+require("dotenv").config();
+
+const db = require("./config/mongoose-connection");
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
