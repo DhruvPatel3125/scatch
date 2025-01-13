@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const isLoggedin = require("../middlewares/isLoggedin")
 const productModel = require("../models/product-model");
+const userModel = require('../models/user-model');
+const { disconnect } = require('mongoose');
 
 router.get("/",function(req,res){
     let error = req.flash("error");
@@ -10,7 +12,24 @@ router.get("/",function(req,res){
 
 router.get("/shop",isLoggedin,async function(req,res){
     let products = await productModel.find();
-    res.render("shop",{products});
+    let success = req.flash("success");
+    res.render("shop",{products,success});
+}
+)
+router.get("/cart",isLoggedin,async function(req,res){
+   let user = await userModel.findOne({email:req.user.email}).populate("cart");
+
+  const bill = (Number(user.cart[0].price)+20)-Number(user.cart[0].disconnect)
+    res.render("cart",{user,bill});
+}
+)
+router.get("/addtocart/:id",isLoggedin,async function(req,res){
+ let user = await userModel.findOne({email:req.user.email})
+ user.cart.push(req.params.productid)
+ await user.save()
+ req.flash("success","Added to cart");
+ res.redirect("/shop");
+
 }
 )
 router.get("/logout",isLoggedin,function(req,res){
@@ -19,3 +38,5 @@ router.get("/logout",isLoggedin,function(req,res){
 )
 
 module.exports = router;
+
+//19:00

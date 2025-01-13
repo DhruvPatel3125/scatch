@@ -32,24 +32,35 @@ module.exports.registerUser = async function(req,res){
     }
 }
 
-module.exports.loginUser = async function(req,res){
-    let {email,password} = req.body;
-
-   let user = await userModel.findOne({email:email})
-   if(!user) return res.status(401).send("invalid email or password")
-
-    bcrypt.compare(password,user.password,function(err,result){
-    if(result){
-        let token = generateToken(user);
-        res.cookie("token",token)
-        res.send("You can  login successful")
-    }
-    else{
-        res.status(401).send("invalid email or password")
+module.exports.loginUser = async function (req, res) {
+    try {
+      const { email, password } = req.body;
+  
+      // Find user in the database
+      const user = await userModel.findOne({ email: email });
+      if (!user) {
+        return res.status(401).render("login", { error: "Invalid email or password" });
+      }
+  
+      // Compare hashed password
+      bcrypt.compare(password, user.password, function (err, result) {
+        if (result) {
+          const token = generateToken(user);
+  
+          // Set the token in a cookie
+          res.cookie("token", token);
+  
+          // Redirect to /shop route
+          return res.redirect("/shop");
+        } else {
+          return res.status(401).render("login", { error: "Invalid email or password" });
         }
-    })
-
-}
+      });
+    } catch (error) {
+      res.status(500).render("error", { error: error.message });
+    }
+  };
+  
 
 module.exports.logout = function(req,res){
     res.cookie("token","");
